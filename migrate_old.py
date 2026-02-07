@@ -210,16 +210,16 @@ async def batch_fetch(collection, batch_size=500, last_id=None):
         print("last_id:", last_id)
 
 async def main():
-    bot_id=getenv("BOT_ID", input("Enter Your Main Bot ID: "))
+    bot_id=getenv("BOT_ID") or input("Enter Your Main Bot ID: ")
     if not bot_id.isdigit():
         print("Invalid Bot ID")
         return
     global BOT_ID
     BOT_ID = int(bot_id)
-    old_uri = getenv("OLD_URI", input(f"Enter Old Mongo URI: "))
-    old_dbname = getenv("OLD_DBNAME", input("Enter Old Database Name(Default: F2LxBot): ")) or "F2LxBot"
-    new_uri = getenv("NEW_URI", input(f"Enter New Mongo URI: "))
-    new_dbname = getenv("NEW_DBNAME", input("Enter New Database Name(Default: TGFS): ")) or "TGFS"
+    old_uri = getenv("OLD_URI") or input(f"Enter Old Mongo URI: ")
+    old_dbname = getenv("OLD_DBNAME") or input("Enter Old Database Name(Default: F2LxBot): ") or "F2LxBot"
+    new_uri = getenv("NEW_URI") or input(f"Enter New Mongo URI: ")
+    new_dbname = getenv("NEW_DBNAME") or input("Enter New Database Name(Default: TGFS): ") or "TGFS"
     if old_dbname == new_dbname and old_uri == new_uri:
         print("Old and New MongoDB configurations cannot be the same.")
         return
@@ -229,9 +229,9 @@ async def main():
     mongo_client = AsyncIOMotorClient(old_uri)
     old_db = mongo_client[old_dbname]
 
-    workers = getenv("WORKERS", input("Enter number of worker tasks for migration (Default: 20): "))
+    workers = getenv("WORKERS") or input("Enter number of worker tasks for migration (Default: 20): ")
     workers = int(workers) if workers.isdigit() else 20
-    queue_size = getenv("QUEUE_SIZE", input("Enter no of documents to pre fetch from DB (Default: 500): "))
+    queue_size = getenv("QUEUE_SIZE") or input("Enter no of documents to pre fetch from DB (Default: 500): ")
     queue_size = int(queue_size) if queue_size.isdigit() else 500
 
     print("Migrating files...")
