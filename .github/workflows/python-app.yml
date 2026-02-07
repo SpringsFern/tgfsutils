@@ -1,0 +1,63 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  workflow_dispatch:
+    inputs:
+      BOT_ID:
+        description: 'Your Main Bot ID'
+        required: true
+      OLD_URI:
+        description: 'Old MongoDB URI'
+        required: true
+      OLD_DBNAME:
+        description: 'Old Database Name'
+        required: true
+        default: 'F2LxBot'
+      NEW_URI:
+        description: 'New MongoDB URI'
+        required: true
+      NEW_DBNAME:
+        description: 'New Database Name'
+        required: true
+        default: 'TGFS'
+      WORKERS:
+        description: 'number of worker tasks for migration (Default: 20)'
+        required: true
+        default: '20'
+      QUEUE_SIZE:
+        description: 'No of documents to fetch from DB'
+        required: true
+        default: '500'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: run migration
+      run: python migrate_old.py
+      env:
+        BOT_ID: ${{ github.event.inputs.BOT_ID }}
+        OLD_URI: ${{ github.event.inputs.OLD_URI }}
+        OLD_DBNAME: ${{ github.event.inputs.OLD_DBNAME }}
+        NEW_URI: ${{ github.event.inputs.NEW_URI }}
+        NEW_DBNAME: ${{ github.event.inputs.NEW_DBNAME }}
+        WORKERS: ${{ github.event.inputs.WORKERS }}
+        QUEUE_SIZE: ${{ github.event.inputs.QUEUE_SIZE }}
