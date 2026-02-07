@@ -24,6 +24,7 @@ class MongoTGFS():
         self.groups = self.db.groups
         self.users = self.db.users
         self.config = self.db.app_config
+        self.maplinks = self.db.maplinks
 
     async def close(self) -> None:
         self.client.close()
@@ -95,6 +96,14 @@ async def migrate_old_file(tgfs: MongoTGFS, old: dict) -> None:
     await tgfs.files.update_one(
         {"_id": media_id},
         {"$set": update},
+        upsert=True,
+    )
+    await tgfs.maplinks.update_one(
+        {"_id": old["_id"]},
+        {"$set": {
+            "media_id": media_id,
+            "user_id": user_id
+        }},
         upsert=True,
     )
 
