@@ -23,14 +23,6 @@ on:
         description: 'New Database Name'
         required: true
         default: 'TGFS'
-      WORKERS:
-        description: 'number of worker tasks for migration (Default: 20)'
-        required: true
-        default: '20'
-      QUEUE_SIZE:
-        description: 'No of documents to fetch from DB'
-        required: true
-        default: '500'
 
 permissions:
   contents: read
@@ -38,7 +30,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Hide the inputs values to keep them private in the logs when running this workflow
@@ -48,18 +40,20 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+    - name: Setup MongoDB Tools
+      run: |
+        wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.14.1.deb -O mongo-tools.deb
+        sudo apt install ./mongo-tools.deb
+    - name: Verify mongorestore installation
+      run: mongorestore --version
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: run migration
-      run: python migrate_old.py
-      env:
-        BOT_ID: ${{ github.event.inputs.BOT_ID }}
-        OLD_URI: ${{ github.event.inputs.OLD_URI }}
-        OLD_DBNAME: ${{ github.event.inputs.OLD_DBNAME }}
-        NEW_URI: ${{ github.event.inputs.NEW_URI }}
-        NEW_DBNAME: ${{ github.event.inputs.NEW_DBNAME }}
-        WORKERS: ${{ github.event.inputs.WORKERS }}
-        QUEUE_SIZE: ${{ github.event.inputs.QUEUE_SIZE }}
+    - name: create dump
+      run: mongodump --uri=${{ github.event.inputs.OLD_URI }} --db=${{ github.event.inputs.OLD_DBNAME }} --out="oldbson"
+    - name: process dump
+      run: python3 migrate_old.py ${{ github.event.inputs.OLD_DBNAME }} ${{ github.event.inputs.NEW_DBNAME }} ${{ github.event.inputs.BOT_ID }}
+    - name: restore processed dump
+      run: mongorestore --uri=${{ github.event.inputs.NEW_URI }} ./mongodump

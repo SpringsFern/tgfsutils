@@ -2,3 +2,4 @@ pyrogram
 motor
 dnspython
 tqdm
+lmdb

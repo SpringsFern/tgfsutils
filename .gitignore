@@ -5,3 +5,6 @@ test.py
 __pycache__
 
 tgfs/patches/*.py
+mongodump/
+oldbson/
+files.lmdb
