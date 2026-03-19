@@ -50,7 +50,7 @@ def build_files_update(old: dict) -> tuple[int, dict]:
     update = {
         "dc_id": decoded.dc_id,
         "file_name": old["file_name"],
-        "is_deleted": old.get("restricted", False),
+        "is_restricted": old.get("restricted", False),
         "mime_type": old["mime_type"],
         "size": int(old["file_size"]),
         "thumb_size": decoded.thumbnail_size,
